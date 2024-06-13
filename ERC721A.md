@@ -12,5 +12,5 @@ During reading the balanceOf a tokenId. Its not just simply reading from a map. 
 
 # Opensea workflow
  - scans for Transfer events (off chain)
- - ERC20 and ERC721 Transfer events share the same signature
+ - ERC20 and ERC721 Transfer events share the same signature(on chain)
  - Checks supportsInterface to determine if its ERC20 or ERC721 (making static call)
