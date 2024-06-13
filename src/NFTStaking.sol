@@ -113,12 +113,18 @@ contract NFTStaking is IERC721Receiver {
     }
 
     function _getRewardAmount(uint256 tokenId) private view returns (uint256) {
-        uint256 timePassed = block.timestamp -
-            s_nftOwners[tokenId].depositTimestamp;
+        uint256 timePassed;
+        uint256 eligibleReward;
+        unchecked {
+            timePassed =
+                block.timestamp -
+                s_nftOwners[tokenId].depositTimestamp;
+        }
         uint256 totalRewardAccumulated = (timePassed / TIME_TO_REWARD) *
             _getRewardRate();
-        uint256 eligibleReward = totalRewardAccumulated -
-            s_nftRewardTally[tokenId];
+        unchecked {
+            eligibleReward = totalRewardAccumulated - s_nftRewardTally[tokenId];
+        }
 
         return eligibleReward;
     }

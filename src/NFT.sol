@@ -52,17 +52,18 @@ contract NFT is ERC721, ERC2981, Ownable2Step, ReentrancyGuard {
         bytes32 merkleRoot
     ) ERC721("Non Fungible Token", "NFT") Ownable(msg.sender) {
         i_discountsMerkleRoot = merkleRoot;
-        // initialize the bitmap with all bits set to 1
-        uint256 indices = (MAX_SUPPLY / 256) + 1;
-        if (MAX_SUPPLY % 256 == 0) {
-            indices--;
+        unchecked {
+            // initialize the bitmap with all bits set to 1
+            uint256 indices = (MAX_SUPPLY / 256) + 1;
+            if (MAX_SUPPLY % 256 == 0) {
+                indices--;
+            }
+            for (uint256 i = 0; i < indices; i++) {
+                s_nonClaimedDiscountBitMap._data[
+                        i
+                    ] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+            }
         }
-        for (uint256 i = 0; i < indices; i++) {
-            s_nonClaimedDiscountBitMap._data[
-                    i
-                ] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-        }
-
         _setDefaultRoyalty(owner(), REWARD_RATE_NUMERATOR);
     }
 
@@ -93,9 +94,13 @@ contract NFT is ERC721, ERC2981, Ownable2Step, ReentrancyGuard {
         }
 
         BitMaps.unset(s_nonClaimedDiscountBitMap, index);
+        uint256 discountedPrice;
+        unchecked {
+            discountedPrice =
+                (NFT_PRICE * DISCOUNT_NUMERATOR) /
+                DISCOUNT_DENOMINATOR;
+        }
 
-        uint256 discountedPrice = (NFT_PRICE * DISCOUNT_NUMERATOR) /
-            DISCOUNT_DENOMINATOR;
         return _buyNft(msg.sender, msg.value, discountedPrice);
     }
 
@@ -128,7 +133,7 @@ contract NFT is ERC721, ERC2981, Ownable2Step, ReentrancyGuard {
         address buyer,
         uint256 etherSent,
         uint256 nftPrice
-    ) private returns (uint256) {
+    ) private returns (uint256 tokenId) {
         if (s_currentSupply == MAX_SUPPLY) {
             revert MaxSupplyReached();
         }
@@ -137,7 +142,9 @@ contract NFT is ERC721, ERC2981, Ownable2Step, ReentrancyGuard {
             revert EtherValueNotEnough();
         }
 
-        uint256 tokenId = s_currentSupply++;
+        unchecked {
+            tokenId = s_currentSupply++;
+        }
 
         _safeMint(buyer, tokenId);
         // return change
@@ -149,6 +156,5 @@ contract NFT is ERC721, ERC2981, Ownable2Step, ReentrancyGuard {
                 revert TransferFailed();
             }
         }
-        return tokenId;
     }
 }
