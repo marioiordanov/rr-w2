@@ -56,8 +56,8 @@ contract NFTStaking is IERC721Receiver {
     function withdrawNFt(uint256 tokenId) external onlyNftOwner(tokenId) {
         uint256 rewardAmount = _getRewardAmount(tokenId);
         delete s_nftOwners[tokenId];
+        delete s_nftRewardTally[tokenId];
         if (rewardAmount > 0) {
-            delete s_nftRewardTally[tokenId];
             emit RewardWithdrawn(tokenId, msg.sender);
             i_rewardToken.mint(msg.sender, rewardAmount);
         }
